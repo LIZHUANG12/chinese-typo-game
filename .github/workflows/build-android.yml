@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Simple APK
 
 on:
   workflow_dispatch:
@@ -25,47 +25,20 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Check project structure
+    - name: Create simple web app
       run: |
-        echo "=== Project Structure ==="
-        ls -la
-        echo "=== Client Directory ==="
-        ls -la client/ || echo "No client directory"
-        echo "=== Package.json ==="
-        cat package.json
-
-    - name: Install dependencies
-      run: |
-        echo "Installing dependencies..."
-        npm install --legacy-peer-deps
-        echo "Dependencies installed"
-
-    - name: Debug build process
-      run: |
-        echo "=== Available scripts ==="
-        npm run
-        echo "=== Trying to build ==="
-        npm run build || echo "Build failed, trying alternative"
-
-    - name: Alternative build
-      run: |
-        echo "=== Trying direct vite build ==="
-        npx vite build || echo "Vite build failed"
-        echo "=== Checking for build output ==="
-        find . -name "dist" -type d
-        find . -name "build" -type d
-
-    - name: Install Capacitor
-      run: |
-        npm install @capacitor/cli @capacitor/core @capacitor/android
-        npx cap --version
-
-    - name: Prepare for Capacitor
-      run: |
-        echo "=== Preparing build output ==="
         mkdir -p www
-        # Copy any available build output
-        cp -r client/dist/* www/ 2>/dev/null || cp -r dist/public/* www/ 2>/dev/null || echo "index.html" > www/index.html
+        cp simple-mobile-game.html www/index.html
+        echo '{"name": "chinese-typo-game", "version": "1.0.0"}' > package.json
+
+    - name: Install and setup Capacitor
+      run: |
+        npm install @capacitor/core @capacitor/cli @capacitor/android
+        npx cap init "中文错字挑战" "com.typogame.app" --web-dir="www"
+        
+    - name: Add Android platform
+      run: |
+        npx cap add android
 
     - name: Sync Capacitor
       run: |
@@ -75,10 +48,10 @@ jobs:
       run: |
         cd android
         chmod +x gradlew
-        ./gradlew assembleDebug --info
+        ./gradlew assembleDebug --no-daemon
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: chinese-typo-game-debug
+        name: chinese-typo-game-simple
         path: android/app/build/outputs/apk/debug/app-debug.apk
