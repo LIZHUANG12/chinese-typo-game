@@ -1,0 +1,8 @@
+{
+	"appId": "com.typogame.app",
+	"appName": "Chinese Typo Game",
+	"webDir": "dist/public",
+	"server": {
+		"androidScheme": "https"
+	}
+}
